@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package chord;
+
+option go_package = "/pb";
+
+message Key {
+    string key = 1;
+}
+
+message ResponseNode{
+    string ip_addr = 1;
+    string port = 2;
+    bool found_flag = 3;
+}
+
+message Node_ip{
+    string curr_ip_addr = 1;
+}
+
+message Node{
+    int32 id = 1;
+	string curr_ip_addr = 2;
+	string succ_ip_addr = 3;
+	string pred_ip_addr = 4;
+	string curr_port    = 5;
+	string succ_port    = 6;
+	string pred_port    = 7;
+    map<string,int32> hash_table    = 8;
+}
+
+
+service KeyService{
+    rpc Lookup(Key) returns (ResponseNode);
+    rpc RegisterNode(Node_ip) returns (Node_ip);
+}
+
