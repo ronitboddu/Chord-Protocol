@@ -3,6 +3,7 @@ package client
 import (
 	"Test1/pb"
 	"context"
+	"fmt"
 	"time"
 
 	"google.golang.org/grpc"
@@ -21,11 +22,11 @@ func FindKey(succ_ip_addr string, succ_port string, key string) (*pb.ResponseNod
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
-	res, err := c.Lookup(ctx, &pb.Key{Key: key})
-
+	res, err := c.RPCLookup(ctx, &pb.Key{Key: key})
 	if err != nil {
 		panic(err)
 	}
+	fmt.Println("here")
 	return res, nil
 
 }

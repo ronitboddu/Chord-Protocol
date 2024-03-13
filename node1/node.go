@@ -1,69 +1,56 @@
 package main
 
 import (
+	"Test1/models"
 	"Test1/node1/listener"
 	"Test1/pb"
-	"context"
 	"fmt"
 	"sync"
-	"time"
-
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
+
+type ChordServer struct {
+	pb.UnimplementedKeyServiceServer
+}
 
 var id int32 = 1
 var curr_ip_addr = "127.0.0.1"
-var succ_ip_addr = "127.0.0.2"
-var pred_ip_addr = "127.0.0.3"
+var succ_ip_addr = "127.0.0.3"
+var pred_ip_addr = "127.0.0.14"
 var curr_port = "50001"
 var succ_port = "50001"
 var pred_port = "50001"
 
 var node = pb.Node{
-	Id:         id,
-	CurrIpAddr: curr_ip_addr,
-	SuccIpAddr: succ_ip_addr,
-	PredIpAddr: pred_ip_addr,
-	CurrPort:   curr_port,
-	SuccPort:   succ_port,
-	PredPort:   pred_port,
-	HashTable:  make(map[string]int32),
+	Id:        id,
+	CurrIp:    &pb.NodeIp{Id: id, IpAddr: curr_ip_addr, Port: curr_port},
+	SuccIp:    &pb.NodeIp{Id: 3, IpAddr: succ_ip_addr, Port: succ_port},
+	PredIp:    &pb.NodeIp{Id: 14, IpAddr: pred_ip_addr, Port: pred_port},
+	HashTable: make(map[string]int32),
 }
 
-func AddKey(node *pb.Node, key string, val int32) {
-	node.HashTable[key] = val
-}
-
-func RegisterNode() {
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
-	conn, err := grpc.DialContext(ctx, "127.0.0.254:50001", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock())
-	if err != nil {
-		panic(err)
-	}
-	defer conn.Close()
-
-	c := pb.NewKeyServiceClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
-	defer cancel()
-
-	random_ip, err := c.RegisterNode(ctx, &pb.NodeIp{CurrIpAddr: node.CurrIpAddr})
-
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println("here")
-	fmt.Println(random_ip)
-}
+var t = models.Transport{Node: &node, CS: models.ChordServer{}}
+var f = models.Fingers{Node: &node}
 
 func main() {
-	RegisterNode()
+	f.CreateFingerTable(4)
+	f.PrintFingerTable(4)
+	//t.RegisterNode()
 	var wg sync.WaitGroup
-	AddKey(&node, "1", 1)
+	f.AddKey("1", 1)
 	wg.Add(1)
-	go listener.GRPCListen(&wg, &node)
-	//resNode, _ := client.FindKey(node.GetSuccIpAddr(), node.GetSuccPort(), "3")
-	//fmt.Println(resNode.IpAddr)
-	wg.Wait()
+	go listener.GRPCListen(&wg, &t)
 
+	resNode, _ := t.FindKey("14")
+	// fmt.Println(resNode.IpAddr)
+	// resNode, _ = t.FindKey("7")
+	// fmt.Println(resNode.IpAddr)
+	// resNode, _ = t.FindKey("8")
+	// fmt.Println(resNode.IpAddr)
+	// resNode, _ = t.FindKey("11")
+	// fmt.Println(resNode.IpAddr)
+	// resNode, _ = t.FindKey("14")
+	// fmt.Println(resNode.IpAddr)
+	// resNode, _ := t.RPCGetSuccessor("127.0.0.7", "50001")
+	fmt.Println(resNode.IpAddr, resNode.Port)
+	wg.Wait()
 }

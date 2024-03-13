@@ -2,7 +2,7 @@ package listener
 
 import (
 	"Test1/models"
-	"Test1/node3/client"
+	"Test1/node7/client"
 	"Test1/pb"
 	"context"
 	"fmt"
@@ -20,9 +20,8 @@ var t *models.Transport
 var hashTable map[string]int32
 
 func (c *ChordServer) RPCLookup(ctx context.Context, Key *pb.Key) (*pb.ResponseNode, error) {
-	fmt.Println("node3 lookup call")
+	fmt.Println("node8 lookup call")
 	if _, ok := hashTable[Key.GetKey()]; !ok {
-		//fmt.Println(t.Node.SuccIp.IpAddr, t.Node.SuccIp.Port)
 		return client.FindKey(t.Node.SuccIp.IpAddr, t.Node.SuccIp.Port, Key.Key)
 	}
 	resNode := &pb.ResponseNode{}

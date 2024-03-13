@@ -2,7 +2,7 @@ package listener
 
 import (
 	"Test1/models"
-	"Test1/node3/client"
+	"Test1/node7/client"
 	"Test1/pb"
 	"context"
 	"fmt"
@@ -19,10 +19,9 @@ type ChordServer struct {
 var t *models.Transport
 var hashTable map[string]int32
 
-func (c *ChordServer) RPCLookup(ctx context.Context, Key *pb.Key) (*pb.ResponseNode, error) {
-	fmt.Println("node3 lookup call")
+func (c *ChordServer) Lookup(ctx context.Context, Key *pb.Key) (*pb.ResponseNode, error) {
+	fmt.Println("node1 lookup call")
 	if _, ok := hashTable[Key.GetKey()]; !ok {
-		//fmt.Println(t.Node.SuccIp.IpAddr, t.Node.SuccIp.Port)
 		return client.FindKey(t.Node.SuccIp.IpAddr, t.Node.SuccIp.Port, Key.Key)
 	}
 	resNode := &pb.ResponseNode{}
@@ -31,8 +30,7 @@ func (c *ChordServer) RPCLookup(ctx context.Context, Key *pb.Key) (*pb.ResponseN
 	resNode.FoundFlag = true
 	return resNode, nil
 }
-
-func (c *ChordServer) GetSuccessor(ctx context.Context, emp *pb.Empty) (*pb.NodeIp, error) {
+func (c *ChordServer) RPCGetSuccessor(ctx context.Context, emp *pb.Empty) (*pb.NodeIp, error) {
 	return &pb.NodeIp{IpAddr: t.Node.SuccIp.IpAddr, Port: t.Node.SuccIp.Port}, nil
 }
 

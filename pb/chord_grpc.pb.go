@@ -22,8 +22,10 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type KeyServiceClient interface {
-	Lookup(ctx context.Context, in *Key, opts ...grpc.CallOption) (*ResponseNode, error)
-	RegisterNode(ctx context.Context, in *NodeIp, opts ...grpc.CallOption) (*NodeIp, error)
+	RPCLookup(ctx context.Context, in *Key, opts ...grpc.CallOption) (*ResponseNode, error)
+	RPCRegisterNode(ctx context.Context, in *NodeIp, opts ...grpc.CallOption) (*NodeIp, error)
+	RPCGetSuccessor(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*NodeIp, error)
+	RPCClosestPrecedingFinger(ctx context.Context, in *IdM, opts ...grpc.CallOption) (*NodeIp, error)
 }
 
 type keyServiceClient struct {
@@ -34,18 +36,36 @@ func NewKeyServiceClient(cc grpc.ClientConnInterface) KeyServiceClient {
 	return &keyServiceClient{cc}
 }
 
-func (c *keyServiceClient) Lookup(ctx context.Context, in *Key, opts ...grpc.CallOption) (*ResponseNode, error) {
+func (c *keyServiceClient) RPCLookup(ctx context.Context, in *Key, opts ...grpc.CallOption) (*ResponseNode, error) {
 	out := new(ResponseNode)
-	err := c.cc.Invoke(ctx, "/chord.KeyService/Lookup", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/chord.KeyService/RPCLookup", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *keyServiceClient) RegisterNode(ctx context.Context, in *NodeIp, opts ...grpc.CallOption) (*NodeIp, error) {
+func (c *keyServiceClient) RPCRegisterNode(ctx context.Context, in *NodeIp, opts ...grpc.CallOption) (*NodeIp, error) {
 	out := new(NodeIp)
-	err := c.cc.Invoke(ctx, "/chord.KeyService/RegisterNode", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/chord.KeyService/RPCRegisterNode", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *keyServiceClient) RPCGetSuccessor(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*NodeIp, error) {
+	out := new(NodeIp)
+	err := c.cc.Invoke(ctx, "/chord.KeyService/RPCGetSuccessor", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *keyServiceClient) RPCClosestPrecedingFinger(ctx context.Context, in *IdM, opts ...grpc.CallOption) (*NodeIp, error) {
+	out := new(NodeIp)
+	err := c.cc.Invoke(ctx, "/chord.KeyService/RPCClosestPrecedingFinger", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -56,8 +76,10 @@ func (c *keyServiceClient) RegisterNode(ctx context.Context, in *NodeIp, opts ..
 // All implementations must embed UnimplementedKeyServiceServer
 // for forward compatibility
 type KeyServiceServer interface {
-	Lookup(context.Context, *Key) (*ResponseNode, error)
-	RegisterNode(context.Context, *NodeIp) (*NodeIp, error)
+	RPCLookup(context.Context, *Key) (*ResponseNode, error)
+	RPCRegisterNode(context.Context, *NodeIp) (*NodeIp, error)
+	RPCGetSuccessor(context.Context, *Empty) (*NodeIp, error)
+	RPCClosestPrecedingFinger(context.Context, *IdM) (*NodeIp, error)
 	mustEmbedUnimplementedKeyServiceServer()
 }
 
@@ -65,11 +87,17 @@ type KeyServiceServer interface {
 type UnimplementedKeyServiceServer struct {
 }
 
-func (UnimplementedKeyServiceServer) Lookup(context.Context, *Key) (*ResponseNode, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Lookup not implemented")
+func (UnimplementedKeyServiceServer) RPCLookup(context.Context, *Key) (*ResponseNode, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RPCLookup not implemented")
 }
-func (UnimplementedKeyServiceServer) RegisterNode(context.Context, *NodeIp) (*NodeIp, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RegisterNode not implemented")
+func (UnimplementedKeyServiceServer) RPCRegisterNode(context.Context, *NodeIp) (*NodeIp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RPCRegisterNode not implemented")
+}
+func (UnimplementedKeyServiceServer) RPCGetSuccessor(context.Context, *Empty) (*NodeIp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RPCGetSuccessor not implemented")
+}
+func (UnimplementedKeyServiceServer) RPCClosestPrecedingFinger(context.Context, *IdM) (*NodeIp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RPCClosestPrecedingFinger not implemented")
 }
 func (UnimplementedKeyServiceServer) mustEmbedUnimplementedKeyServiceServer() {}
 
@@ -84,38 +112,74 @@ func RegisterKeyServiceServer(s grpc.ServiceRegistrar, srv KeyServiceServer) {
 	s.RegisterService(&KeyService_ServiceDesc, srv)
 }
 
-func _KeyService_Lookup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _KeyService_RPCLookup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(Key)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(KeyServiceServer).Lookup(ctx, in)
+		return srv.(KeyServiceServer).RPCLookup(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/chord.KeyService/Lookup",
+		FullMethod: "/chord.KeyService/RPCLookup",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(KeyServiceServer).Lookup(ctx, req.(*Key))
+		return srv.(KeyServiceServer).RPCLookup(ctx, req.(*Key))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _KeyService_RegisterNode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _KeyService_RPCRegisterNode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(NodeIp)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(KeyServiceServer).RegisterNode(ctx, in)
+		return srv.(KeyServiceServer).RPCRegisterNode(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/chord.KeyService/RegisterNode",
+		FullMethod: "/chord.KeyService/RPCRegisterNode",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(KeyServiceServer).RegisterNode(ctx, req.(*NodeIp))
+		return srv.(KeyServiceServer).RPCRegisterNode(ctx, req.(*NodeIp))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _KeyService_RPCGetSuccessor_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KeyServiceServer).RPCGetSuccessor(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/chord.KeyService/RPCGetSuccessor",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KeyServiceServer).RPCGetSuccessor(ctx, req.(*Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _KeyService_RPCClosestPrecedingFinger_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(IdM)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KeyServiceServer).RPCClosestPrecedingFinger(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/chord.KeyService/RPCClosestPrecedingFinger",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KeyServiceServer).RPCClosestPrecedingFinger(ctx, req.(*IdM))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -128,12 +192,20 @@ var KeyService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*KeyServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "Lookup",
-			Handler:    _KeyService_Lookup_Handler,
+			MethodName: "RPCLookup",
+			Handler:    _KeyService_RPCLookup_Handler,
 		},
 		{
-			MethodName: "RegisterNode",
-			Handler:    _KeyService_RegisterNode_Handler,
+			MethodName: "RPCRegisterNode",
+			Handler:    _KeyService_RPCRegisterNode_Handler,
+		},
+		{
+			MethodName: "RPCGetSuccessor",
+			Handler:    _KeyService_RPCGetSuccessor_Handler,
+		},
+		{
+			MethodName: "RPCClosestPrecedingFinger",
+			Handler:    _KeyService_RPCClosestPrecedingFinger_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

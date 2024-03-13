@@ -6,6 +6,7 @@ option go_package = "/pb";
 
 message Key {
     string key = 1;
+    map<string,int32> hash_table    = 2;
 }
 
 message ResponseNode{
@@ -15,23 +16,31 @@ message ResponseNode{
 }
 
 message Node_ip{
-    string curr_ip_addr = 1;
+    int32 id = 1;
+    string ip_addr = 2;
+    string port = 3;
 }
+
+message Empty{}
 
 message Node{
     int32 id = 1;
-	string curr_ip_addr = 2;
-	string succ_ip_addr = 3;
-	string pred_ip_addr = 4;
-	string curr_port    = 5;
-	string succ_port    = 6;
-	string pred_port    = 7;
-    map<string,int32> hash_table    = 8;
+	Node_ip curr_ip = 2;
+	Node_ip succ_ip = 3;
+	Node_ip pred_ip = 4;
+    map<string,int32> hash_table    = 5;
+}
+
+message id_m{
+    int32 id = 1;
+    int32 m = 2;
 }
 
 
 service KeyService{
-    rpc Lookup(Key) returns (ResponseNode);
-    rpc RegisterNode(Node_ip) returns (Node_ip);
+    rpc RPCLookup(Key) returns (ResponseNode);
+    rpc RPCRegisterNode(Node_ip) returns (Node_ip);
+    rpc RPCGetSuccessor(Empty) returns (Node_ip);
+    rpc RPCClosestPrecedingFinger(id_m) returns (Node_ip);
 }
 

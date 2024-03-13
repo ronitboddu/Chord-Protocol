@@ -18,16 +18,16 @@ type ChordServer struct {
 var registry = make(map[string]bool)
 
 func (c *ChordServer) RegisterNode(ctx context.Context, node_ip_addr *pb.NodeIp) (*pb.NodeIp, error) {
-	fmt.Println(node_ip_addr.CurrIpAddr)
+	fmt.Println(node_ip_addr.IpAddr)
 	if len(registry) == 0 {
-		ip_adrr := node_ip_addr.CurrIpAddr
+		ip_adrr := node_ip_addr.IpAddr
 		registry[ip_adrr] = true
 		return nil, nil
 	}
 	rand_list_ip_addr := reflect.ValueOf(registry).MapKeys()[0].String()
-	ip_adrr := node_ip_addr.CurrIpAddr
+	ip_adrr := node_ip_addr.IpAddr
 	registry[ip_adrr] = true
-	return &pb.NodeIp{CurrIpAddr: rand_list_ip_addr}, nil
+	return &pb.NodeIp{IpAddr: rand_list_ip_addr}, nil
 }
 
 func GRPCListen(wg *sync.WaitGroup) {
