@@ -8,7 +8,7 @@ import (
 
 type Fingers struct {
 	Node        *pb.Node
-	fingerTable map[int32]*pb.NodeIp
+	FingerTable map[int32]*pb.NodeIp
 }
 
 func (f *Fingers) AddKey(key string, val int32) {
@@ -16,26 +16,41 @@ func (f *Fingers) AddKey(key string, val int32) {
 }
 
 func (f *Fingers) CreateFingerTable(m int) {
-	f.fingerTable = make(map[int32]*pb.NodeIp)
+	f.FingerTable = make(map[int32]*pb.NodeIp)
 	for i := 0; i < m; i++ {
 		id := f.Node.Id
-		key := GetFingerKey(id, i, m)
-		f.fingerTable[key] = nil
+		key := GetFingerKey(id, int32(i), int32(m))
+		f.FingerTable[key] = nil
 	}
 }
 
 func (f *Fingers) PrintFingerTable(m int) {
 	for i := 0; i < m; i++ {
 		id := f.Node.Id
-		key := GetFingerKey(id, i, m)
-		if f.fingerTable[key] == nil {
+		key := GetFingerKey(id, int32(i), int32(m))
+		if f.FingerTable[key] == nil {
 			fmt.Println(key, "nil")
 		} else {
-			fmt.Println(key, f.fingerTable[key].IpAddr)
+			fmt.Println(key, f.FingerTable[key].IpAddr)
 		}
 	}
 }
 
-func GetFingerKey(id int32, i int, m int) int32 {
+func GetFingerKey(id int32, i int32, m int32) int32 {
 	return (id + int32(math.Pow(float64(2), float64(i)))) % int32(math.Pow(2.0, float64(m)))
 }
+
+func Between(key int32, a int32, b int32) bool {
+	if a > b {
+		return a < key || b >= key
+	} else if b > a {
+		return a < key && b >= key
+	} else if a == b {
+		return a != key
+	}
+	return false
+}
+
+// 3, 3, 8
+// 7, 3, 8
+// 3, 3, 5

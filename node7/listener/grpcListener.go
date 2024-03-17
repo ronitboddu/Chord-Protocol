@@ -32,7 +32,7 @@ func (c *ChordServer) RPCLookup(ctx context.Context, Key *pb.Key) (*pb.ResponseN
 }
 
 func (c *ChordServer) GetSuccessor(ctx context.Context, emp *pb.Empty) (*pb.NodeIp, error) {
-	return &pb.NodeIp{IpAddr: t.Node.SuccIp.IpAddr, Port: t.Node.SuccIp.Port}, nil
+	return &pb.NodeIp{Id: t.Node.SuccIp.Id, IpAddr: t.Node.SuccIp.IpAddr, Port: t.Node.SuccIp.Port}, nil
 }
 
 func GRPCListen(wg *sync.WaitGroup, transport *models.Transport) {

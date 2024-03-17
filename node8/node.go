@@ -7,7 +7,9 @@ import (
 	"sync"
 )
 
-var id int32 = 8
+var curr_id int32 = 8
+var succ_id int32 = 11
+var pred_id int32 = 7
 var curr_ip_addr = "127.0.0.8"
 var succ_ip_addr = "127.0.0.11"
 var pred_ip_addr = "127.0.0.7"
@@ -17,15 +19,15 @@ var pred_port = "50001"
 
 // var node = models.GetNode(curr_ip_addr, succ_ip_addr, pred_ip_addr, curr_port, succ_port, pred_port)
 var node = pb.Node{
-	Id:        id,
-	CurrIp:    &pb.NodeIp{Id: id, IpAddr: curr_ip_addr, Port: curr_port},
-	SuccIp:    &pb.NodeIp{Id: 11, IpAddr: succ_ip_addr, Port: succ_port},
-	PredIp:    &pb.NodeIp{Id: 7, IpAddr: pred_ip_addr, Port: pred_port},
+	Id:        curr_id,
+	CurrIp:    &pb.NodeIp{Id: curr_id, IpAddr: curr_ip_addr, Port: curr_port},
+	SuccIp:    &pb.NodeIp{Id: succ_id, IpAddr: succ_ip_addr, Port: succ_port},
+	PredIp:    &pb.NodeIp{Id: pred_id, IpAddr: pred_ip_addr, Port: pred_port},
 	HashTable: make(map[string]int32),
 }
 
-var t = models.Transport{Node: &node, CS: models.ChordServer{}}
 var f = models.Fingers{Node: &node}
+var t = models.Transport{Node: &node, Finger: &f}
 
 func main() {
 	//t.Register()

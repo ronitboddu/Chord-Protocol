@@ -30,8 +30,36 @@ func (c *ChordServer) Lookup(ctx context.Context, Key *pb.Key) (*pb.ResponseNode
 	resNode.FoundFlag = true
 	return resNode, nil
 }
-func (c *ChordServer) RPCGetSuccessor(ctx context.Context, emp *pb.Empty) (*pb.NodeIp, error) {
-	return &pb.NodeIp{IpAddr: t.Node.SuccIp.IpAddr, Port: t.Node.SuccIp.Port}, nil
+func (c *ChordServer) GetSuccessor(ctx context.Context, emp *pb.Empty) (*pb.NodeIp, error) {
+	return &pb.NodeIp{Id: t.Node.SuccIp.Id, IpAddr: t.Node.SuccIp.IpAddr, Port: t.Node.SuccIp.Port}, nil
+}
+
+func (c *ChordServer) RPCClosestPrecedingFinger(ctx context.Context, id_m *pb.IdM) (*pb.NodeIp, error) {
+	ft := t.Finger.FingerTable
+	id, m := id_m.Id, id_m.M
+	max, min := int32(0), int32(2147483647)
+	max_node, min_node := &pb.NodeIp{}, &pb.NodeIp{}
+	for i := m - 1; i >= 0; i-- {
+		finger := models.GetFingerKey(t.Node.Id, i, m)
+		if ft[finger] == nil {
+			continue
+		}
+		finger_succ_id := ft[finger].Id
+		//curr_id := t.Node.Id
+		fmt.Println(finger_succ_id, max, min)
+		if finger_succ_id > max {
+			max = finger_succ_id
+			max_node = ft[finger]
+		}
+		if id > finger_succ_id && (id-finger_succ_id) < min {
+			min = (id - finger_succ_id)
+			min_node = ft[finger]
+		}
+	}
+	if min_node.IpAddr == "" {
+		return max_node, nil
+	}
+	return min_node, nil
 }
 
 func GRPCListen(wg *sync.WaitGroup, transport *models.Transport) {
